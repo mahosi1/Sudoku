@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace Sudoku
 {
@@ -13,18 +10,18 @@ namespace Sudoku
     {
         static void Main(string[] args)
         {
-            var b1 = Board.ReadIn(@"c:\temp\puzzle2.txt");
+            //var b1 = Board.ReadIn(@"sample.txt");
+            //var b1 = Board.ReadInString("008450371020097560503800492300705849280030056745609003837006904012970030956043100");
+            //var b1 = Board.ReadInString("..845.371.2..9756.5.38..4923..7.584928..3..567456.9..3837..69.4.1297..3.956.431..");
+            var b1 = Board.ReadInString("  845 371 2  9756 5 38  4923  7 584928  3  567456 9  3837  69 4 1297  3 956 431  ");
             var board1 = new Board(b1);
             board1.PrintOut2();
             Console.Out.WriteLine("going to solve now");
             Console.Out.WriteLine("\n\n");
             board1.Solve();
             Console.Read();
-
-
         }
     }
-
 
     class Board
     {
@@ -47,30 +44,33 @@ namespace Sudoku
                     }
                 }
             }
-
             IsValid();
         }
 
-
         public static byte[,] ReadIn(string filename)
         {
+            string data = string.Join("", File.ReadAllLines(filename));
+            return ReadInString(data);
+        }
+
+        public static byte[,] ReadInString(string text)
+        {
             byte[,] b = new byte[9, 9];
-            string[] data = File.ReadAllLines(filename);
-            for (int index = 0; index < data.Length; index++)
+            var data = text.Replace("\n", "").Replace("|", "").Replace("-","");
+            for (int index = 0; index < 9; index++)
             {
-                string s = data[index];
                 for (int i = 0; i < 9; i++)
                 {
-                    if (s[i] != '0')
+                    byte value;
+                    if (data[index * 9 + i] != '0' && byte.TryParse(data[index * 9 + i].ToString(), out value))
                     {
-                        b[index, i] = byte.Parse(s[i].ToString());
+                        b[index, i] = value;
                     }
                 }
             }
             return b;
         }
-
-
+        
         public void IsValid()
         {
             for (int i = 0; i < 9; i++)
@@ -89,20 +89,17 @@ namespace Sudoku
                     }
                 }
             }
-
             for (int i = 0; i < 9; i++)
             {
                 Array.Clear(_b, 0, 9);
-                Console.Out.WriteLine("\n\n");
+                Console.WriteLine("\n\n");
                 for (int j = 0; j < 3; j++)
                 {
-                    Console.Out.WriteLine("");
+                    Console.WriteLine("");
                     for (int k = 0; k < 3; k++)
                     {
                         var y = j + (i / 3) * 3;
                         var x = k + (i % 3) * 3;
-                        //Console.Out.Write("{0},{1}\t", y, x);
-
                         var val = _board[y, x] - 1;
                         if (val != -1)
                         {
@@ -115,27 +112,25 @@ namespace Sudoku
                     }
                 }
             }
-
-
         }
-
-
+        
         public void PrintOut2()
         {
             for (int rows = 0; rows < 9; rows++)
             {
-                Console.Out.WriteLine(
-                    "------------------------------------------------------------------------------------------");
+                Console.Out.WriteLine("------------------------------------------------------------------------------------------");
                 for (int cellRow = 0; cellRow < 3; cellRow++)
                 {
-                    Console.Out.Write("|");
+                    Console.Write("|");
                     for (int column = 0; column < 9; column++)
                     {
                         for (int cellColumn = 0; cellColumn < 3; cellColumn++)
                         {
                             var x = _board[rows, column];
                             if (x != 0 && cellColumn == 0 && cellRow == 0)
-                                Console.Out.Write(" {0} ", x);
+                            {
+                                Console.Write(" {0} ", x);
+                            }
                             else if (x == 0)
                             {
                                 var items = this._options[rows, column];
@@ -144,28 +139,24 @@ namespace Sudoku
                                 var val = items[index];
                                 if (val != 0)
                                 {
-                                    Console.Out.Write(" {0} ", val);
+                                    Console.Write(" {0} ", val);
                                 }
                                 else
                                 {
-                                    Console.Out.Write("   ");
+                                    Console.Write("   ");
                                 }
                             }
                             else
                             {
-                                Console.Out.Write("   ");
+                                Console.Write("   ");
                             }
                         }
-                        Console.Out.Write("|");
+                        Console.Write("|");
                     }
-                    Console.Out.WriteLine("");
-
+                    Console.WriteLine("");
                 }
             }
-
-            Console.Out.WriteLine(
-                "------------------------------------------------------------------------------------------");
-
+            Console.WriteLine("------------------------------------------------------------------------------------------");
         }
 
         public void Solve()
@@ -208,11 +199,9 @@ namespace Sudoku
                                 pruned = true;
                             }
                         }
-
                     }
                 }
             }
-
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)
@@ -231,9 +220,7 @@ namespace Sudoku
 
                 }
             }
-
-
-            return pruned;
+                return pruned;
         }
 
         private bool PruneCube()
@@ -252,7 +239,9 @@ namespace Sudoku
                             var x = column + 3*cubeX;
                             var val = _board[x, y];
                             if (val > 0)
+                            {
                                 seen.Add(val);
+                            }
                         }
                     }
                     for (int row = 0; row < 3; row++)
@@ -272,18 +261,13 @@ namespace Sudoku
                                     {
                                         options[options.IndexOf(option)] = 0;
                                         solved = true;
-
                                     }
                                 }
-
-
                             }
                         }
                     }
                 }
             }
-
-
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)
@@ -299,14 +283,10 @@ namespace Sudoku
                             this._options[i, j] = null;
                         }
                     }
-
                 }
             }
-
             return solved;
-
         }
-
 
         private bool PruneColumn()
         {
@@ -337,12 +317,9 @@ namespace Sudoku
                                 pruned = true;
                             }
                         }
-
                     }
                 }
-
             }
-
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)
@@ -358,11 +335,8 @@ namespace Sudoku
                             this._options[i, j] = null;
                         }
                     }
-
                 }
             }
-
-
             return pruned;
         }
 
@@ -383,12 +357,13 @@ namespace Sudoku
                             var x = column + 3 * cubeX;
                             var val = _board[x, y];
                             if (val > 0)
+                            {
                                 nums.Remove(val);
+                            }
                         }
                     }
                     if (nums.Count == 1)
                     {
-
                         for (int row = 0; row < 3; row++)
                         {
                             for (int column = 0; column < 3; column++)
@@ -406,8 +381,6 @@ namespace Sudoku
                             }
                         }
                     }
-
-
                 }
             }
             return solved;
@@ -418,15 +391,14 @@ namespace Sudoku
             bool solved = false;
             for (int i = 0; i < 9; i++)
             {
-                //if (i == 8)
-                //    Console.Out.WriteLine("break");
                 var nums = Enumerable.Range(1, 9).ToList();
                 for (int j = 0; j < 9; j++)
                 {
-
                     var val = _board[i, j];
                     if (val > 0)
+                    {
                         nums.Remove(val);
+                    }
                 }
                 if (nums.Count == 1)
                 {
@@ -444,7 +416,6 @@ namespace Sudoku
                 }
             }
             return solved;
-
         }
 
         public bool SolveColumn()
@@ -452,15 +423,14 @@ namespace Sudoku
             bool solved = false;
             for (int i = 0; i < 9; i++)
             {
-                //if (i == 8)
-                //    Console.Out.WriteLine("break");
                 var nums = Enumerable.Range(1, 9).ToList();
                 for (int j = 0; j < 9; j++)
                 {
-
                     var val = _board[j, i];
                     if (val > 0)
+                    {
                         nums.Remove(val);
+                    }
                 }
                 if (nums.Count == 1)
                 {
@@ -472,14 +442,11 @@ namespace Sudoku
                             _board[j, i] = (byte)nums[0];
                             solved = true;
                             _options[j, i] = null;
-
                         }
                     }
                 }
             }
             return solved;
-
         }
-
     }
 }
